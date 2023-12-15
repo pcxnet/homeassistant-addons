@@ -2,7 +2,7 @@ import * as inception from './inception';
 import * as mqtt from './mqtt';
 import { MqttConfig } from '../contracts'
 
-let mqttConfig: any;
+let mqttConfig: MqttConfig;
 
 const mqttMessageHandler = (commandTopic: string, callback: (payload: string) => Promise<void>) =>
   async (topic: string, message: Buffer) => {
@@ -19,11 +19,10 @@ const startControlAreas = async () => {
     const name = area.Name;
     const areaId = area.ID;
     const topic = `${mqttConfig.discovery_prefix}/alarm_control_panel/${areaId}/config`;
-    const commandTopic = `${mqttConfig.topic_prefix}/alarm_control_panel/${areaId}/set`;
-    const stateTopic = `${mqttConfig.topic_prefix}/alarm_control_panel/${areaId}`;
+    const commandTopic = `inception/alarm_control_panel/${areaId}/set`;
     const message = {
       name,
-      state_topic: stateTopic,
+      state_topic: `inception/alarm_control_panel/${areaId}`,
       command_topic: commandTopic,
       availability_topic: mqttConfig.availability_topic,
       code: mqttConfig.alarm_code,
@@ -50,16 +49,15 @@ const startControlDoors = async () => {
     const name = door.Name;
     const doorId = door.ID;
     const topic = `${mqttConfig.discovery_prefix}/lock/${doorId}/config`;
-    const commandTopic = `${mqttConfig.topic_prefix}/lock/${doorId}/set`;
-    const stateTopic = `${mqttConfig.topic_prefix}/lock/${doorId}`;
+    const commandTopic = `inception/lock/${doorId}/set`;
     const message = {
       name,
-      state_topic: stateTopic,
+      state_topic: `inception/lock/${doorId}`,
       command_topic: commandTopic,
       availability_topic: mqttConfig.availability_topic,
       optimistic: false,
       payload_lock: 'Lock',
-      payload_unlock: 'TimedUnlock',
+      payload_unlock: 'Unlock',
       unique_id: `${doorId}`
     }
     mqtt.publish(topic, JSON.stringify(message));
@@ -78,8 +76,7 @@ const startControlOutputs = async () => {
     const name = output.Name;
     const outputId = output.ID;
     const topic = `${mqttConfig.discovery_prefix}/switch/${outputId}/config`;
-    const commandTopic = `${mqttConfig.topic_prefix}/switch/${outputId}/set`;
-    const stateTopic = `${mqttConfig.topic_prefix}/switch/${outputId}`;
+    const commandTopic = `inception/switch/${outputId}/set`;
 
     let icon = 'mdi:help-circle';
 
@@ -95,7 +92,7 @@ const startControlOutputs = async () => {
 
     const message = {
       name,
-      state_topic: stateTopic,
+      state_topic: `inception/switch/${outputId}`,
       command_topic: commandTopic,
       availability_topic: mqttConfig.availability_topic,
       optimistic: false,
@@ -120,12 +117,9 @@ const startControlInputs = async () => {
     const name = input.Name;
     const outputId = input.ID;
     const topic = `${mqttConfig.discovery_prefix}/binary_sensor/${outputId}/config`;
-    const stateTopic = `${mqttConfig.topic_prefix}/binary_sensor/${outputId}`;
 
     let deviceClass = [
       'motion',
-      'pir',
-      'louvre',
       'garage',
       'door',
       'gate',
@@ -135,21 +129,18 @@ const startControlInputs = async () => {
       'power',
       'smoke',
       'vibration',
-      'shock',
+      'window',
       'cold',
+      'heat',
       'light',
       'moisture',
       'break',
-      'glass',
-      'window',
-      'heat'
+      'glass'
     ].find(device => name.toLowerCase().includes(device)) || 'opening';
 
     // override found device
     if (deviceClass === 'garage') {
       deviceClass = 'garage_door';
-    } else if (deviceClass === 'pir') {
-      deviceClass = 'motion';
     } else if (deviceClass === 'rex') {
       deviceClass = 'door';
     } else if (deviceClass === 'gate') {
@@ -160,28 +151,24 @@ const startControlInputs = async () => {
       deviceClass = 'vibration';
     } else if (deviceClass === 'break') {
       deviceClass = 'vibration';
-    } else if (deviceClass === 'shock') {
-      deviceClass = 'vibration';
-    } else if (deviceClass === 'louvre') {
-      deviceClass = 'window';
     } else if (deviceClass === 'glass') {
       deviceClass = 'window';
     }
 
     const message = {
       name,
-      state_topic: stateTopic,
+      state_topic: `inception/binary_sensor/${outputId}`,
       availability_topic: mqttConfig.availability_topic,
       device_class: deviceClass,
       payload_off: 'Off',
       payload_on: 'On',
-      unique_id: `${outputId}`
+      unique_id: `${outputId}`,
     }
     mqtt.publish(topic, JSON.stringify(message));
   });
 };
 
-export const connect = async (config: any) => {
+export const connect = async (config: MqttConfig) => {
   mqttConfig = config;
 
   await Promise.all([

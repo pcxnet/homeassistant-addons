@@ -1,10 +1,11 @@
 import * as mqtt from 'mqtt';
-import { MqttConfig } from '../contracts';
+
+import { MqttConfig } from '../contracts'
 
 let client: mqtt.Client;
-let mqttConfig: any;
+let mqttConfig: MqttConfig;
 
-export const connect = (config: any, connectOptions: mqtt.IClientOptions, onConnected?: (client: mqtt.MqttClient) => void) => {
+export const connect = (config: MqttConfig, connectOptions: mqtt.IClientOptions, onConnected?: (client: mqtt.MqttClient) => void) => {
   mqttConfig = config;
 
   client = mqtt.connect(`mqtt://${config.username}:${config.password}@${config.broker}:${config.port}`, connectOptions);
@@ -30,11 +31,11 @@ export const onMessage = (callback: mqtt.OnMessageCallback) => {
   client.on('message', callback);
 };
 
-export const publish = (topic: string, payload: string, retain: boolean = mqttConfig.retain) => {
+export const publish = (topic: string, payload: string) => {
   console.log(`Sending payload: ${payload} to topic: ${topic}`);
   client.publish(topic, payload, {
     qos: mqttConfig.qos,
-    retain
+    retain: mqttConfig.retain
   });
 };
 

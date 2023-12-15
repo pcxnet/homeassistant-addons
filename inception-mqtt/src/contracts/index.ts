@@ -6,20 +6,21 @@ export interface ControlObjectInterface {
 
 export type StateRequestType = "AreaStateRequest" | "DoorStateRequest" | "InputStateRequest" | "OutputStateRequest";
 
-export interface MonitorStateUpdatesPayloadInterface {
+export interface MonitorUpdatesPayloadInterface {
   ID: StateRequestType;
   RequestType: string;
-  InputData: MonitorStateInputData
+  InputData: {
+    stateType: string;
+    timeSinceUpdate: string;
+  }
 }
 
-export interface MonitorStateUpdatesResponseInterface {
+export interface MonitorUpdatesResponseInterface {
   ID: StateRequestType;
-  Result: StateResultInterface
-}
-
-export interface StateResultInterface {
-  updateTime: number;
-  stateData: StateDataInterface[];
+  Result: {
+    updateTime: number;
+    stateData: StateDataInterface[];
+  }
 }
 
 export interface StateDataInterface {
@@ -27,34 +28,30 @@ export interface StateDataInterface {
   PublicState: number;
 }
 
-export interface MonitorReviewUpdatesResponseInterface {
-  ID: string
-  Result: ReviewDataInterface[]
+export interface MqttConfig {
+  broker: string,
+  port: number,
+  username: string,
+  password: string,
+  qos: 0 | 1 | 2,
+  retain: boolean,
+  discovery: boolean,
+  discovery_prefix: string,
+  topic_prefix: string,
+  availability_topic: string,
+  alarm_code: number,
 }
 
-export interface ReviewDataInterface {
-  ID: string;
-  Description: string;
-  MessageCategory: number;
-  What: string;
-  Where: string;
-  WhenTicks: number;
+export interface InceptionConfig {
+  base_url: string,
+  port: number,
+  username: string,
+  password: string,
+  polling_timeout: number,
+  polling_delay: number,
 }
 
-export interface MonitorStateInputData {
-  stateType: string;
-  timeSinceUpdate: string;
-}
-
-export type LiveReviewRequestType = "LiveReviewEvents";
-
-export interface MonitorReviewUpdatesPayloadInterface {
-  ID: LiveReviewRequestType;
-  RequestType: LiveReviewRequestType;
-  InputData: MonitorReviewInputData
-}
-
-export interface MonitorReviewInputData {
-  referenceId: string;
-  referenceTime: number;
+export interface Config {
+  mqtt: MqttConfig,
+  inception: InceptionConfig
 }
