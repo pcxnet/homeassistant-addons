@@ -1,10 +1,10 @@
 {
   "name": "inception-mqtt addon",
-  "version": "1.2",
+  "version": "latest",
   "slug": "inception-mqtt",
   "description": "Add-on wrapped inception-mqtt project from matthew-larner for use as addon with Home Assistant OS",
   "url": "https://github.com/pcxnet/inception-mqtt",
-  "image": "pcxnet/image-{arch}-inception-mqtt",
+  "image": "matthewlarner/inception-mqtt",
   "options" : {
     "baseUrl" : null,
     "port" : 80,
