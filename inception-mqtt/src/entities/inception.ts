@@ -1,9 +1,9 @@
 import axios, { AxiosError } from 'axios';
 import * as delay from 'delay';
 
-import { ControlObjectInterface, MonitorUpdatesResponseInterface, InceptionConfig } from '../contracts';
+import { ControlObjectInterface, MonitorStateUpdatesResponseInterface, MonitorReviewUpdatesResponseInterface } from '../contracts';
 
-let config: InceptionConfig;
+let config: any;
 let userID = '';
 let isConnected = false;
 let wasConnectedOnce = false;
@@ -31,8 +31,6 @@ const authenticate = async (): Promise<void> => {
     // Kill app if authentication fails
     if (response.data.Response.Result !== "Success") {
       console.error('Killing application due to failed inception authentication');
-      console.error(response.data.Response.Result);
-      console.error('url: ', config.base_url + '/authentication/login');
       process.exit(1);
     }
 
@@ -43,7 +41,6 @@ const authenticate = async (): Promise<void> => {
     onAuthenticatedHandler(true);
   } catch (error) {
     console.error('Error in inception authentication: ' + error.message);
-    console.error('url: ', config.base_url + '/authentication/login');
 
     if (!wasConnectedOnce) {
       process.exit(1);
@@ -110,7 +107,8 @@ export const postControlDoorActivity = async (id: string, controlType: string) =
   try {
     await axios.post(`${config.base_url}/control/door/${id}/activity`, {
       Type: 'ControlDoor',
-      DoorControlType: controlType
+      DoorControlType: controlType,
+      TimeSecs: 5
     }, {
       headers: {
         Cookie: `LoginSessId=${userID}`
@@ -180,7 +178,7 @@ export const getControlInputs = async (): Promise<ControlObjectInterface[]> => {
   }
 };
 
-export const monitorUpdates = async (payload: any[], onUnAuthorizedHandler: () => void): Promise<MonitorUpdatesResponseInterface> => {
+export const monitorUpdates = async (payload: any[], onUnAuthorizedHandler: () => void): Promise<MonitorStateUpdatesResponseInterface|MonitorReviewUpdatesResponseInterface> => {
   try {
     const timeout = (config.polling_timeout ?? 60) * 1000;
     const response = await axios.post(`${config.base_url}/monitor-updates`, payload, {
@@ -208,7 +206,7 @@ export const monitorUpdates = async (payload: any[], onUnAuthorizedHandler: () =
   }
 }
 
-export const connect = async (configuration: InceptionConfig, onAuthenticated: (isConnected: boolean) => void) => {
+export const connect = async (configuration: any, onAuthenticated: (isConnected: boolean) => void) => {
   config = configuration;
   onAuthenticatedHandler = onAuthenticated;
 
